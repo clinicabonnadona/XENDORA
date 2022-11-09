@@ -1,0 +1,114 @@
+* {
+    font-size: 0.93rem !important;
+}
+body {
+    margin: 0;
+    font-family: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji",
+        "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #858796;
+    text-align: left;
+    background-color: #fff;
+}
+
+.divider {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    height: 1px;
+    overflow: hidden;
+    background: #e9ecef;
+}
+.app-card-outbox-link {
+    text-decoration: none !important;
+}
+
+.app-card:hover {
+    transform: scale(1.1);
+    transition: 0.1s linear;
+}
+.app-card .card-title {
+    text-transform: uppercase;
+    color: rgba(13, 27, 62, 0.7);
+    font-weight: bold;
+    font-size: 0.88rem;
+}
+
+.app-login-img-box {
+    background-image: url("../assets/images/backg_login.jpg");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    opacity: 0.7;
+}
+
+/* SCROLLBAR STYLE
+*/
+
+::-webkit-scrollbar {
+    width: 6px;
+}
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    height: 50px !important;
+    max-height: 50px !important;
+}
+::-webkit-scrollbar-thumb {
+    background: #04aa6d;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #009933;
+}
+
+.login-date-input {
+    border-radius: 20.5px;
+    padding: 10px;
+}
+
+.login-search-input {
+    border-bottom-left-radius: 20.5px;
+    border-top-left-radius: 20.5px;
+    padding: 10px;
+}
+.login-search-input-append {
+    border-top-right-radius: 20.5px !important;
+    border-bottom-right-radius: 20.5px !important;
+}
+
+.login-form-input,
+.login-form-button,
+.vdatetime-input {
+    border-radius: 20.5px;
+    height: 40px !important;
+    padding: 10px;
+}
+
+.input-select-custom {
+    border-radius: 20.5px;
+}
+
+/* ANIMATIONS */
+
+/*
+    BUTTONS
+*/
+.times-icon {
+    -moz-transition: all 0.25s ease-out;
+    -ms-transition: all 0.25s ease-out;
+    -o-transition: all 0.25s ease-out;
+    -webkit-transition: all 0.25s ease-out;
+}
+
+.button-times-icon:hover .times-icon {
+    -moz-transform: rotate(90deg);
+    -ms-transform: rotate(90deg);
+    -o-transform: rotate(90deg);
+    -webkit-transform: rotate(90deg);
+}
+
+.input-with-centered-placeholder::-webkit-input-placeholder {
+    text-align: center;
+    line-height: 100px;
+}
