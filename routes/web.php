@@ -89,6 +89,7 @@ Route::middleware('auth')->group(function () {
         '/reportes/marcaciones-egresos/validacion',
         'ReportesController@reportMarcacionesView'
     )->name('reportes.marcacionesegresos');
+    Route::get('/reportes/calidad', 'ReportesController@calidadReport')->name('reportes.calidad');
 
 
     /*  REPORTES

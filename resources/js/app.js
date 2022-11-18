@@ -122,6 +122,10 @@ Vue.component(
     require("./components/shared/reportes/Egresos/MarcacionesHechas").default
 );
 Vue.component(
+    "report-auditoria",
+    require("./components/shared/reportes/Calidad/Calidad.vue").default
+);
+Vue.component(
     "farmacia-recepcion-component",
     require("./components/shared/farmacia/RecepcionMedicamentos").default
 );

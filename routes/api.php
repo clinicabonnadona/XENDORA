@@ -92,6 +92,10 @@ Route::middleware('auth')->group(function () {
 
         Route::get('reportes/get-marcaciones-egresos/{pcte_doc}/paciente', 'ReportesController@getMarcacionesEgresos');
 
+        /** reportes calidad */
+        Route::get('reportes/get/auditoria/{fechaini?}/{fechafin?}', 'ReportesController@reporteCalidadAuditorias');
+        Route::get('reportes/get/comites/{fechaini?}/{fechafin?}', 'ReportesController@reporteCalidadComites');
+
         /* HANDLE FARMACIA REPORTS ROUTES */
         // Glucometrias
         Route::get('/reportes/get-gluco/{initdate}', 'Api\v1\User\GlucometriasController@getActivoGlucometries');

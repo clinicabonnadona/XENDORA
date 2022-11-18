@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\AuditsExport;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -47,6 +48,11 @@ class ReportesController extends Controller
     public function reportMarcacionesView()
     {
         return view('shared.reportes.marcacionesegresos');
+    }
+
+    public function calidadReport()
+    {
+        return view('shared.reportes.calidad');
     }
 
 
@@ -221,13 +227,13 @@ class ReportesController extends Controller
         }
     }
 
-    public function reporteHuellero($initalDate = '', $endingDate = '', $document = '') {
+    public function reporteHuellero($initalDate = '', $endingDate = '', $document = '')
+    {
 
         if ($initalDate == '' || $endingDate == '') {
 
             $initDate = Carbon::now()->format('Y-m-d');
             $endDate = Carbon::now()->format('Y-m-d');
-
         } else {
 
             if ($document != '') {
@@ -295,7 +301,6 @@ class ReportesController extends Controller
 
                     throw $e;
                 }
-
             } else {
                 try {
 
@@ -361,8 +366,6 @@ class ReportesController extends Controller
                     throw $e;
                 }
             }
-
-
         }
     }
 
@@ -447,6 +450,216 @@ class ReportesController extends Controller
                 'msg' => 'No Content'
             ], 204);
         }
+    }
+
+    public function reporteCalidadAuditorias(Request $request, $initDate = '', $endDate = '')
+    {
+        if (!$request->ajax()) return response()
+            ->json([
+                'msg' => 'Bad Request',
+                'status' => 500
+            ], 500);
+
+        if (!$initDate || !$endDate) {
+
+            $initDate = Carbon::now()->format('Y-m-d') . ' 00:00:00';
+            $endDate = Carbon::now()->format('Y-m-d') . ' 23:59:59';
+        }
+
+        $query = DB::connection('pgsql')
+            ->table('audits')
+            ->select(
+                'control.id as AUDITORIA_ID',
+                'control.startDate as FECHA_EJECUCION',
+                'control.endDate as FECHA_FINALIZACION',
+                'entity.name as ENTIDAD',
+                'area.name as PROCESO',
+                'audits.quantitative_fulfilment as CALIFICACION_CUANTITATIVA',
+                DB::raw(
+                    "
+                        trim(control.description) as DESCRIPCION
+                        , CASE  WHEN control.state = 0 THEN 'PROGRAMADA'
+                                WHEN control.state = 1 THEN 'REALIZADA'
+                                WHEN control.state = 2 THEN 'CANCELADA POR ENTIDAD'
+                                WHEN control.state = 3 THEN 'CANCELADA POR OCBP'
+                        END as ESTADO
+                        , CASE WHEN control.state IN(2, 3) then control.reason
+                            else ''
+                        END as MOTIVO_CANCELACION
+                        , CASE  WHEN audits.external = true THEN 'EXTERNA'
+                                WHEN audits.external = false THEN 'INTERNA'
+                        END as TIPO_AUDITORIA
+                    "
+                )
+            )
+            ->selectRaw('count(noncompliance.activity) as hallazgos')
+            ->leftJoin('control', 'audits.controlId', '=', 'control.id')
+            ->leftJoin('noncompliance', 'noncompliance.auditId', '=', 'control.id')
+            ->leftJoin('entity', 'entity.id', '=', 'audits.entityId')
+            ->leftJoin('area', 'area.id', '=', 'audits.areaId')
+            ->whereBetween('control.startDate', [$initDate . ' 00:00:00', $endDate . ' 23:59:59'])
+            ->groupBy('control.id', 'control.startDate', 'control.endDate', 'entity.name', 'area.name', 'audits.quantitative_fulfilment', 'control.description', 'control.state', 'audits.external')
+            ->orderBy('control.startDate', 'desc')
+            ->get();
+
+
+        if (sizeof($query) < 0) return response()
+            ->json([
+                'msg' => 'Empty Audit Query',
+                'status' => 204
+            ], 204);
+
+        $auditorias = [];
+
+        foreach ($query as $item) $auditorias[] = [
+            'descripcion' => $item->descripcion,
+            'fecha_ejecucion' => $item->FECHA_EJECUCION,
+            'fecha_finalizacion' => $item->FECHA_FINALIZACION,
+            'estado' => $item->estado,
+            'motivo_cancelacion' => $item->motivo_cancelacion,
+            'tipo_auditoria' => $item->tipo_auditoria,
+            'entidad' => $item->ENTIDAD,
+            'proceso' => $item->PROCESO,
+            'cantidad_hallazgos' => $item->hallazgos,
+            'calificacion_cuantitativa' => $item->CALIFICACION_CUANTITATIVA,
+        ];
+
+        if (sizeof($auditorias) < 0) return response()
+            ->json([
+                'msg' => 'Error in Audit Array',
+                'status' => 204,
+            ], 204);
+
+
+        return response()
+            ->json([
+                'msg' => 'Auditorias',
+                'status' => 200,
+                'count' => count($auditorias),
+                'data' => $auditorias
+            ], 200);
+    }
+
+    public function reporteCalidadComites(Request $request, $initDate = '', $endDate = '')
+    {
+        if (!$request->ajax()) return response()
+            ->json([
+                'msg' => 'Bad Request',
+                'status' => 500
+            ], 500);
+
+        if (!$initDate || !$endDate) {
+
+            $initDate = Carbon::now()->format('Y-m-d') . ' 00:00:00';
+            $endDate = Carbon::now()->format('Y-m-d') . ' 23:59:59';
+        }
+
+        $query = DB::connection('pgsql')
+            ->table('committee_meeting as cm')
+            ->leftJoin('committee as c', 'c.id', '=', 'cm.committeeId')
+            ->leftJoin('committee_compromise as cc', 'cc.meetingId', '=', 'cm.id')
+            ->leftJoin('committee_member as cm2', function ($join) {
+                $join->on('cm.committeeId', '=', 'cm2.committeeId');
+                $join->on('cm2.id', '=', 'cc.attendantId');
+            })
+            ->leftJoin('user_details as ud', 'ud.id', '=', 'cm2.memberId')
+            ->leftJoin('users as u', 'u.id', '=', 'ud.userId')
+            ->select(
+                'cm.id',
+                'c.name',
+                'cm.theme',
+                'cm.place',
+                'cm.schedule',
+                DB::raw("(  case	when cm.status = 1 then 'PROGRAMADA'
+				            when cm.status = 2 then 'REALIZADA'
+				                when cm.status = 3 then 'CANCELADA OCBP'
+		        end) AS ESTADO_REUNION"),
+                'cc.compromise',
+                DB::raw("CONCAT (u.name, ' ', u.lastname ) as RESPONSABLE"),
+                DB::raw("(  case	when cc.completed = true then 'CERRADO'
+                        else 'EN PROCESO'
+                end) AS ESTADO_COMPROMISO"),
+                'cc.observations',
+            )
+            ->whereNull('cm.deletedAt')
+            ->whereNull('c.deletedAt')
+            ->whereBetween('cm.schedule', [$initDate . ' 00:00:00', $endDate . ' 23:59:59'])
+            ->orderBy('cm.schedule', 'DESC')
+            ->get();
+
+        if (sizeof($query) < 0) return response()
+            ->json([
+                'msg' => 'Empty Comités Query',
+                'status' => 204
+            ], 204);
+
+        $comites = [];
+
+        foreach ($query as $item) {
+
+            $queryMember = DB::connection('pgsql')
+                ->table('meeting_member as mm_s')
+                ->selectRaw('count(mm_s.id)')
+                ->where('mm_s.meetingId', '=', $item->id)
+                ->count();
+
+            $queryMemberAttendance = DB::connection('pgsql')
+                ->table('meeting_member as mm_s')
+                ->selectRaw('count(mm_s.id)')
+                ->where('mm_s.meetingId', '=', $item->id)
+                ->where('mm_s.attended', true)
+                ->get();
+
+            if (!$queryMember) return response()
+                ->json([
+                    'msg' => 'Error in Quorum Subquery',
+                    'status' => 204,
+                ]);
+
+            if (count($queryMemberAttendance) < 0) return response()
+                ->json([
+                    'msg' => 'Error in Attendance Subquery',
+                    'status' => 204,
+                ]);
+
+            $attendance = 0;
+            $percent = 0;
+            foreach ($queryMemberAttendance as $member) $attendance = $member->count;
+
+            $percent = ($attendance / $queryMember) * 100;
+
+            $comites[] = [
+                'committe_id' => $item->id,
+                'nombre_comite' => $item->name,
+                'tema' => $item->theme,
+                'lugar' => $item->place,
+                'anio' => (int) Carbon::parse($item->schedule)->format('Y'),
+                'fecha_reunion' => $item->schedule,
+                'estado_reunion' => $item->estado_reunion,
+                'compromiso' => $item->compromise,
+                'responsable' => $item->responsable,
+                'estado_compromiso' => $item->estado_compromiso,
+                'observacion' => $item->observations,
+                'cantidad_citada' => $queryMember,
+                'cantidad_asistidos' => $attendance,
+                'porcentaje_quorum' => $percent
+            ];
+        }
+
+        if (sizeof($comites) < 0) return response()
+            ->json([
+                'msg' => 'Error in Comités Array',
+                'status' => 204,
+            ], 204);
+
+
+        return response()
+            ->json([
+                'msg' => 'Comités',
+                'status' => 200,
+                'count' => count($comites),
+                'data' => $comites
+            ], 200);
     }
 
 
