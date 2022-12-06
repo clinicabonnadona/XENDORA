@@ -76,7 +76,7 @@
 
                         <div class="form-group row mt-3">
                             <div class="col-md-12 text-center">
-                                <p>V 1.3.1 de 27-09-2022</p>
+                                <p>V 1.3.2 de 06-12-2022</p>
                             </div>
                         </div>
 
