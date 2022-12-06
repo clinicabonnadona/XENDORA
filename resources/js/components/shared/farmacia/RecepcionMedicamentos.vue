@@ -101,7 +101,16 @@
                                 </b-col>
 
                                 <b-col sm="12" md="12" lg="12" xl="2">
-                                    <export-excel
+                                    <b-button
+                                        variant="success"
+                                        class="rounded-pill mt-2"
+                                        @click="activeOrdersByDateReport"
+                                        v-can="'reporte-recepcion-medicamentos'"
+                                    >
+                                        Descargar
+                                        <i class="fas fa-file-excel fa-3x"></i>
+                                    </b-button>
+                                    <!-- <export-excel
                                         class="btn btn-success mt-2 rounded-pill"
                                         title="REPORTE RECEPCIÓN DE MEDICAMENTOS"
                                         :data="getReceivedOrdersReport"
@@ -112,7 +121,7 @@
                                     >
                                         Descargar
                                         <i class="fas fa-file-excel fa-3x"></i>
-                                    </export-excel>
+                                    </export-excel> -->
                                 </b-col>
                             </b-row>
                         </template>
@@ -2029,6 +2038,32 @@ export default {
                 })
                 .catch(err => {
                     console.log(err + "Un error ha ocurrido");
+                    this.showOverlay = false;
+                });
+        },
+        activeOrdersByDateReport() {
+            let url = "farmacia/get/received-orders/";
+
+            this.showOverlay = true;
+
+            axios
+                .get(
+                    url + this.payload.initDate + "/to/" + this.payload.endDate
+                )
+                .then(result => {
+                    //if (result.data.status === 200) {
+                    window.open(
+                        "/api/v1/" + url +
+                            this.payload.initDate +
+                            "/to/" +
+                            this.payload.endDate,
+                        "_blank"
+                    );
+                    //}
+                    this.showOverlay = false;
+                })
+                .catch(err => {
+                    console.error("Hubo un error:" + err);
                     this.showOverlay = false;
                 });
         },

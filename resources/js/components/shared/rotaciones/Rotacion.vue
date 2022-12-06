@@ -1,7 +1,7 @@
 <template>
     <b-container fluid>
         <b-row>
-            <b-col xl="12" sm="12">
+            <b-col xl="10" offset-xl="1" sm="12">
                 <b-card no-footer>
                     <b-card-title>
                         <b-row>
@@ -78,7 +78,7 @@
                                     ref="selectableTable"
                                     selectable
                                     bordered
-                                    responsive
+                                    responsive="sm"
                                     :select-mode="selectMode"
                                     :items="getSumistros"
                                     :fields="fields"
@@ -93,46 +93,6 @@
                                     @filtered="onFiltered"
                                     @row-selected="onRowSelected"
                                 >
-                                    <template #cell(actions)="row">
-                                        <b-button
-                                            size="sm"
-                                            @click="
-                                                info(
-                                                    row.item,
-                                                    row.index,
-                                                    $event.target
-                                                )
-                                            "
-                                            class="mr-1"
-                                        >
-                                            Info modal
-                                        </b-button>
-                                        <b-button
-                                            size="sm"
-                                            @click="row.toggleDetails"
-                                        >
-                                            {{
-                                                row.detailsShowing
-                                                    ? "Hide"
-                                                    : "Show"
-                                            }}
-                                            Details
-                                        </b-button>
-                                    </template>
-
-                                    <template #row-details="row">
-                                        <b-card>
-                                            <ul>
-                                                <li
-                                                    v-for="(value,
-                                                    key) in row.item"
-                                                    :key="key"
-                                                >
-                                                    {{ key }}: {{ value }}
-                                                </li>
-                                            </ul>
-                                        </b-card>
-                                    </template>
                                 </b-table>
 
                                 <!-- Pagination Medicamentos Table -->
@@ -217,14 +177,20 @@
                                                         </b-row>
                                                     </b-tab>
 
-                                                    <b-tab>
+                                                    <b-tab
+                                                        v-if="
+                                                            $can(
+                                                                'despachos-ac-access'
+                                                            )
+                                                        "
+                                                    >
                                                         <template #title>
                                                             <i
                                                                 class="fas fa-sign-out-alt"
                                                             ></i>
                                                             Despachos AC
                                                         </template>
-                                                        <b-card-text>
+                                                        
                                                             <DespachosAC
                                                                 :sumcod="
                                                                     selected.sumCod
@@ -233,18 +199,68 @@
                                                             </DespachosAC>
                                                         </b-card-text>
                                                     </b-tab>
+
+                                                    <b-tab
+                                                        v-if="
+                                                            $can(
+                                                                'despachos-ac-access'
+                                                            )
+                                                        "
+                                                    >
+                                                        <template #title>
+                                                            <i
+                                                                class="fas fa-file"
+                                                            ></i>
+                                                            C. Proveedores
+                                                        </template>
+                                                        <b-card-text>
+                                                            <ProveedoresCausacion></ProveedoresCausacion>
+                                                        </b-card-text>
+                                                            
+                                                    </b-tab>
                                                 </b-tabs>
                                             </b-card>
                                         </b-col>
                                     </b-row>
 
                                     <template #modal-footer>
-                                        <b-button
-                                            variant="danger"
-                                            @click="hideModal"
-                                        >
-                                            Cerrar
-                                        </b-button>
+                                        <div class="container-fluid">
+                                            <div class="row">
+                                                <div class="col-8">
+                                                    <b-list-group horizontal>
+                                                        <b-list-group-item
+                                                            style="background-color: #cc99ff"
+                                                        >
+                                                            <span
+                                                                class="text-dark"
+                                                            >
+                                                                Pacientes
+                                                                Fallecidos
+                                                            </span>
+                                                        </b-list-group-item>
+                                                        <b-list-group-item
+                                                            variant="success"
+                                                        >
+                                                            <span
+                                                                class="text-dark"
+                                                            >
+                                                                Pacientes con
+                                                                Primer
+                                                                Despacho</span
+                                                            >
+                                                        </b-list-group-item>
+                                                    </b-list-group>
+                                                </div>
+                                                <div class="col-4 text-right">
+                                                    <b-button
+                                                        variant="danger"
+                                                        @click="hideModal"
+                                                    >
+                                                        Cerrar
+                                                    </b-button>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </template>
                                 </b-modal>
                             </b-col>
@@ -260,8 +276,8 @@
 import RotacionDetail from "./RotacionDetail";
 import EntradasDetail from "../entradas/EntradasDetail";
 import Despachos from "../despachos/Despachos";
-import RotacionVariables from "./RotacionVariables";
 import DespachosAC from "../despachos/DespachosAC.vue";
+import ProveedoresCausacion from "../proveedores/ProveedoresCausacion.vue";
 
 export default {
     name: "Rotacion-Component",
@@ -269,8 +285,8 @@ export default {
         Despachos,
         EntradasDetail,
         RotacionDetail,
-        RotacionVariables,
-        DespachosAC
+        DespachosAC,
+        ProveedoresCausacion
     },
     data() {
         return {
@@ -302,7 +318,7 @@ export default {
                 },
                 {
                     key: "sumBalance",
-                    label: "SALDO",
+                    label: "SALDO FARMACIAS",
                     sortable: true,
                     sortDirection: "desc",
                     class: "text-center"
@@ -314,7 +330,7 @@ export default {
             sortBy: "",
             sortDesc: false,
             sortDirection: "asc",
-            filter: "MO000265",
+            filter: "",
             customFilters: [
                 {
                     name: "alphabet",
@@ -378,7 +394,7 @@ export default {
     padding: 0 !important;
 }
 .modal-dialog {
-    max-width: 95% !important;
+    max-width: 90% !important;
     /* min-height: 100% !important; */
 }
 
@@ -397,4 +413,8 @@ export default {
     padding: 10px;
     height: 3rem;
 }
+/*.table th:nth-child(4) {
+    width: 100px;
+    border: 1px solid black !important;
+}*/
 </style>

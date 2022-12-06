@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\Api\v1\User;
 
+use App\Exports\RecepcionFarmaciaExport;
 use App\Http\Controllers\Controller;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\RecepcionMedicamentos;
+use Maatwebsite\Excel\Facades\Excel;
 
 class RecepcionFarmaciaController extends Controller
 {
@@ -245,6 +247,8 @@ class RecepcionFarmaciaController extends Controller
                     )
                 );
 
+                array_chunk($query, 5000);
+
                 if (sizeof($query) > 0) {
 
                     $records = [];
@@ -368,6 +372,23 @@ class RecepcionFarmaciaController extends Controller
                     'msg' => 'Bad Request',
                     'status' => 400
                 ]);
+        }
+    }
+
+    public function exportReport(Request $request, $initDate = '', $endDate = '')
+    {
+        /* if (!$request->ajax()) return response()
+            ->json([
+                'msg' => 'Petición no Valida',
+                'status' => 400,
+            ]); */
+
+        try {
+            return Excel::download(new RecepcionFarmaciaExport($initDate, $endDate), 'reporteRecepción.xlsx');
+
+            //
+        } catch (\Throwable $th) {
+            throw $th;
         }
     }
 }

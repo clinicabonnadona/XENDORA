@@ -98,7 +98,8 @@ export default {
             audits: [
                 { text: "SELECCIONE UN TIPO DE REPORTE", value: null },
                 { text: "INFORME AUDITORIA", value: 1 },
-                { text: "INFORME COMITÉS", value: 2 }
+                { text: "INFORME COMITÉS", value: 2 },
+                { text: "INFORME CASOS HALCÓN", value: 3 }
             ],
             show: true,
             dataExists: false,
@@ -121,6 +122,14 @@ export default {
             if (this.form.selected === 2) {
                 url =
                     "reportes/get/comites/" +
+                    this.form.initDate +
+                    "/" +
+                    this.form.endDate;
+            }
+
+            if (this.form.selected === 3) {
+                url =
+                    "reportes/get/halcon/casos/" +
                     this.form.initDate +
                     "/" +
                     this.form.endDate;

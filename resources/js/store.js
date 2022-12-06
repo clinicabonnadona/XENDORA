@@ -15,6 +15,7 @@ import SeguimientoDeEvoluciones from "./store/modules/shared/SeguimientoDevoluci
 import FamilyIncomeRecord from "./store/modules/shared/FamilyIncomeRecord";
 import ComprasSeguimientos from "./store/modules/shared/ComprasSeguimiento";
 import ProviderEvaliations from "./store/modules/shared/ProviderEvaluations";
+import ProveedoresCausacion from "./store/modules/shared/ProveedoresCausacion";
 
 Vue.use(Vuex);
 
@@ -32,6 +33,7 @@ export default new Vuex.Store({
         sde: SeguimientoDeEvoluciones,
         uor: FamilyIncomeRecord,
         cs: ComprasSeguimientos,
-        proe: ProviderEvaliations
+        proe: ProviderEvaliations,
+        pc: ProveedoresCausacion
     }
 });

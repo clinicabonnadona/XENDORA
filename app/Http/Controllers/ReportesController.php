@@ -662,6 +662,225 @@ class ReportesController extends Controller
             ], 200);
     }
 
+    public function reporteHalconCasos(Request $request, $initDate = '', $endDate = '')
+    {
+
+        try {
+
+            /*  if (!$request->ajax()) return response()
+                ->json([
+                    'msg' => 'Bad Request',
+                    'status' => 500
+                ], 500); */
+
+            if (!$initDate || !$endDate) {
+
+                $initDate = Carbon::now()->format('Y-m-d') . ' 00:00:00';
+                $endDate = Carbon::now()->format('Y-m-d') . ' 23:59:59';
+            }
+
+            $initialDate = $initDate . ' 00:00:00';
+            $endialDate = $endDate . ' 23:59:59';
+
+            /*$query = DB::connection('pgsql')
+                ->table('issues')
+                ->select(
+                    'issues.createdAt as FECHA_CREACION',
+                    'issues.serial AS NUM_CASO',
+                    'issue_patient.document AS DOCUMENTO',
+                    'document_types.name AS TIPO_DE_DOCUMENTO',
+                    'issue_patient.birthday AS FECHA_NACIMIENTO',
+                    DB::raw(
+                        "case issues.type
+                                when 0 then 'Peticion'
+                                when 1 then 'Queja'
+                                when 2 then 'Reclamo'
+                                when 3 then 'Sugerencia'
+                                when 4 then 'Felicitacion'
+                        end AS TIPO"
+                    ),
+                    'issue_patient.name AS NOMBRE',
+                    'issue_patient.lastname AS APELLIDO',
+                    DB::raw("AGE(CURRENT_DATE, issue_patient.birthday) AS EDAD"),
+                    'minorities.name AS MINORIA',
+                    'issues_details.description AS CASO',
+                    'issue_contact.name AS NOMBRE_DE_CONTACTO',
+                    'issue_contact.lastname AS APELLIDO_DE_CONTACTO',
+                    'entity.name AS ENTIDAD_DE_PACIENTE',
+                    'area.name AS AREA',
+                    'categories.name AS CATEGORIA',
+                    DB::raw(
+                        "case issues_logs.status
+                            when 0 then 'Ingresado'
+                            when 1 then 'Asignado'
+                            when 2 then 'Trasladado'
+                            when 3 then 'Leido'
+                            when 4 then 'Finalizado'
+                            when 5 then 'Reasignado'
+                            when 6 then 'Rechazado'
+                            when 7 then 'Aprobado'
+                            when 8 then 'No Aprobado'
+                            when 9 then 'Respondido'
+                            when 10 then 'Cierre conforme'
+                            when 11 then 'Cierre no conforme'
+                            when 12 then 'Cierre por tiempo'
+                        END AS ESTADO"
+                    ),
+                    'issue_contact.country AS PAIS',
+                    'issue_contact.state AS DEPARTAMENTO',
+                    'issue_contact.city AS CIUDAD',
+                    'issue_contact.address AS DIRECCION',
+                    'issue_contact.email AS EMAIL',
+                    'issue_contact.phone AS TELEFONO',
+                    'issues_details.description AS DESCRIPCION',
+                    'issues_details.solution AS SOLUCION',
+                    DB::raw(
+                        "case issues_details.legal when true then 'SI' else 'NO' end AS REQUERIMIENTO_DE_JURIDICA_LEGAL",
+                        "case issues_details.risk when true then 'SI' else 'NO' end AS RIESGO_DE_VIDA",
+                        "case issues_details.relevant when true then 'SI' else 'NO' end AS PROCEDENTE_NO_PROCEDENTE",
+                        "case issues.management_type
+                            when 0 then 'Administrativo'
+                            when 1 then 'Asistencial'
+                            when 2 then 'Asistencial y Administrativo'
+                        end AS TIPO_DE_GESTION"
+                    ),
+                    'rights.name AS DERECHO_VULNERADO',
+                    'priority.name AS PRIORIDAD'
+                )
+                ->join('issues_details', 'issues_details.issueId', '=', 'issues.id')
+                ->join('issue_patient', 'issue_patient.id', '=', 'issues.patientId')
+                ->leftJoin('document_types', 'document_types.id', '=', 'issue_patient.documentTypeId')
+                ->leftJoin('minorities', 'minorities.id', '=', 'issue_patient.minorityId')
+                ->join('issue_contact', 'issue_contact.id', '=', 'issues.contactId')
+                ->leftJoin('entity', 'entity.id', '=', 'issue_patient.entityId')
+                ->leftJoin('categories', 'categories.id', '=', 'issues.categoryId')
+                ->leftJoin('categories_rights', 'categories_rights.categoryId', '=', 'categories.id')
+                ->leftJoin('rights', 'rights.id', '=', 'categories_rights.rightId')
+                ->leftJoin('issue_areas', 'issue_areas.issueId', '=', 'issues.id')
+                ->leftJoin('area', 'area.id', '=', 'issue_areas.areaId')
+                ->join('priority', 'priority.id', '=', 'issues.priorityId')
+                ->leftJoin('issues_logs', function ($join) {
+                    $join->on('issues_logs.issueId', '=', 'issues_details.id');
+                    $join->on(
+                        'issues_logs.updatedAt',
+                        '=',
+                        DB::select(DB::raw(
+                            "(select max(il.updatedAt) from issues_logs as il where il.issueId = issues_details.id)"
+                        ))
+                    );
+                    //where il."issueId" = issues_details.id
+                })
+                ->whereBetween('issues.createdAt', [$initDate . ' 00:00:00', $endDate . ' 23:59:59'])
+                //->where('area.name', '=', 'Servicios Generales')
+                ->distinct()
+                ->get();*/
+
+            $query = DB::connection('pgsql')
+                ->select(
+                    DB::raw("SELECT 
+                        distinct 'issues.createdAt' AS FECHA_CREACION
+                        , 'issues.serial' AS NUM_CASO
+                        , 'issue_patient.document' AS DOCUMENTO
+                        , 'document_types.name' AS TIPO_DE_DOCUMENTO
+                        , 'issue_patient.birthday' AS FECHA_NACIMIENTO 
+                        , case 'issues.type'
+                                when '0' then 'Peticion'
+                                when '1' then 'Queja'
+                                when '2' then 'Reclamo'
+                                when '3' then 'Sugerencia'
+                                when '4' then 'Felicitacion'
+                        end AS TIPO
+                        , 'issue_patient.name' AS NOMBRE
+                        , 'issue_patient.lastname' AS  APELLIDO
+                        , 'issue_patient.birthday' AS EDAD
+                        , 'minorities.name' AS MINORIA
+                        , regexp_replace(trim('issues_details.description'), E'[\n\r]+', ' ', 'g') AS DESCRIPCION_CASO
+                        , 'issue_contact.name' AS NOMBRE_DE_CONTACTO
+                        , 'issue_contact.lastname' AS APELLIDO_DE_CONTACTO
+                        , 'entity.name' AS ENTIDAD_DE_PACIENTE
+                        , 'area.name' AS AREA
+                        , 'categories.name' AS CATEGORIA
+                        , case 'issues_logs.status'
+                            when '0' then 'Ingresado'
+                            when '1' then 'Asignado'
+                            when '2' then 'Trasladado'
+                            when '3' then 'Leido'
+                            when '4' then 'Finalizado'
+                            when '5' then 'Reasignado'
+                            when '6' then 'Rechazado'
+                            when '7' then 'Aprobado'
+                            when '8' then 'No Aprobado'
+                            when '9' then 'Respondido'
+                            when '10' then 'Cierre conforme'
+                            when '11' then 'Cierre no conforme'
+                            when '12' then 'Cierre por tiempo'
+                        END AS ESTADO
+                        , 'issue_contact.country' PAIS
+                        , 'issue_contact.state' DEPARTAMENTO 
+                        , 'issue_contact.city' CIUDAD
+                        , 'issue_contact.address' DIRECCION
+                        , 'issue_contact.email' EMAIL
+                        , 'issue_contact.phone' TELEFONO
+                        , regexp_replace(trim('issues_details.description'), E'[\n\r]+', ' ', 'g')  DESCRIPCION
+                        , regexp_replace(trim('issues_details.solution'), E'[\n\r]+', ' ', 'g')  SOLUCION
+                        , case 'issues_details.legal' 
+                            when 'true' then 'SI' 
+                            else 'NO' 
+                        end REQUERIMIENTO_DE_JURIDICA_LEGAL
+                        , case 'issues_details.risk' 
+                            when 'true' then 'SI' 
+                            else 'NO' 
+                        end RIESGO_DE_VIDA
+                        , case 'issues_details.relevant' 
+                            when 'true' then 'SI' 
+                            else 'NO' 
+                        end PROCEDENTE_NO_PROCEDENTE
+                        , case 'issues.management_type'
+                            when '0' then 'Administrativo'
+                            when '1' then 'Asistencial'
+                            when '2' then 'Asistencial y Administrativo'
+                        end TIPO_DE_GESTION
+                        , 'rights.name' AS DERECHO_VULNERADO
+                        , 'priority.name' AS PRIORIDAD
+                FROM issues inner JOIN issues_details ON 'issues.id' = 'issues_details.issueId'
+                            inner join issue_patient on 'issues.patientId' = 'issue_patient.id'
+                            left join document_types on 'issue_patient.documentTypeId' = 'document_types.id'
+                            left join minorities on 'issue_patient.minorityId' = 'minorities.id '
+                            inner join issue_contact on 'issue_contact.id' = 'issues.contactId'
+                            left join entity on 'issue_patient.entityId' = 'entity.id'
+                            left join categories on 'categories.id' = 'issues.categoryId'
+                            left join categories_rights on 'categories.id' = 'categories_rights.categoryId'
+                            left join rights on 'rights.id' = 'categories_rights.rightId'
+                            left JOIN issue_areas ON 'issues.id' = 'issue_areas.issueId'
+                            left JOIN area ON 'issue_areas.areaId' = 'area.id'
+                            inner join priority on 'issues.priorityId' = 'priority.id'
+                            left join issues_logs on	'issues_logs.issueId' = 'issues_details.id'
+                                                        and 'issues_logs.updatedAt' =	(	select max('il.updatedAt')
+                                                                                            from issues_logs AS il 
+                                                                                            where 'il.issueId' = 'issues_details.id'
+                                                                                    )
+                WHERE  'issues.createdAt' between '$initialDate' and '$endialDate'")
+                );
+
+            if (sizeof($query) < 0) return response()
+                ->json([
+                    'msg' => 'Empty Halcon Query Response',
+                    'status' => 204,
+                    'data' => []
+                ]);
+
+
+            return response()
+                ->json([
+                    'msg' => 'Casos',
+                    'status' => 200,
+                    'data' => $query
+                ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
 
     public function getMarcacionesEgresos($docPac)
     {

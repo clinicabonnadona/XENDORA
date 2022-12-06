@@ -105,7 +105,7 @@
                         <b-tbody>
                             <b-tr
                                 v-for="(re, index) in itemsForPagination"
-                                :key="index"
+                                :key="re.patientDocument"
                             >
                                 <b-th
                                     :class="
@@ -198,6 +198,53 @@
                     </b-table-simple>
                 </b-col>
             </b-row>
+
+            <hr />
+
+            <b-row>
+                <b-col>
+                    <b-table-simple small caption-top hover responsive bordered>
+                        <caption style="font-weight: bold; color: black;">
+                            CANTIDAD DE PACIENTES NUEVOS MENSUALES:
+                        </caption>
+                        <colgroup>
+                            <col />
+                            <col />
+                        </colgroup>
+                        <colgroup>
+                            <col />
+                            <col />
+                            <col />
+                        </colgroup>
+                        <colgroup>
+                            <col />
+                            <col />
+                        </colgroup>
+                        <b-thead head-variant="dark">
+                            <b-tr>
+                                <b-th
+                                    variant="danger"
+                                    v-for="(m, index) in despachosAcPerMonthsWithNewDispatch"
+                                    :key="index"
+                                    class="text-center"
+                                    >{{ getMonthsName(m.month) }} {{ m.year }}
+                                </b-th>
+                            </b-tr>
+                        </b-thead>
+                        <b-tbody>
+                            <b-tr class="text-center">
+                                <b-th
+                                    v-for="(ds, index) in despachosAcPerMonthsWithNewDispatch"
+                                    :key="index"
+                                    >{{ ds.quantity }}
+                                </b-th>
+                            </b-tr>
+                        </b-tbody>
+                    </b-table-simple>
+                </b-col>
+            </b-row>
+
+
         </b-overlay>
     </b-container>
 </template>
@@ -213,6 +260,7 @@ export default {
             showOverlay: true,
             despachosAc: [],
             despachosAcPerMonths: [],
+            despachosAcPerMonthsWithNewDispatch: [],
             monthsArray: [],
             transProps: {
                 // Transition name
@@ -297,6 +345,8 @@ export default {
                             this.despachosAc = response.data.data;
                             this.despachosAcPerMonths =
                                 response.data.dataPerMonth;
+                            this.despachosAcPerMonthsWithNewDispatch =
+                                response.data.dataPerMonthWithNewDispatch;
                             //console.log(response.data.data);
                             //this.totalRows = this.despachosAc.length;
 

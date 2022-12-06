@@ -20,6 +20,7 @@ import excel from "vue-excel-export";
 import store from "./store";
 
 /* Imported Local Files */
+import PermissionsCan from "../mixins/Permissions.vue";
 
 Vue.config.productionTip = false;
 const pluginOptions = {
@@ -38,6 +39,7 @@ Vue.use(Vue2Filters);
 Vue.use(VueCurrencyInput, pluginOptions);
 Vue.use(Popover);
 Vue.use(excel);
+Vue.mixin(PermissionsCan);
 
 String.prototype.trunc = function(n) {
     return this.substr(0, n - 1) + (this.length > n ? "..." : "");

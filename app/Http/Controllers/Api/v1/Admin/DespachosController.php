@@ -37,18 +37,9 @@ class DespachosController extends Controller
                     $despachosAC = DB::connection('sqlsrv_hosvital')
                         ->select(
                             DB::raw(
-                                //"SELECT ANIO, MES, TOTAL_DESPACHOS FROM XENDORA_DESPACHOS_SUPER_ALTO_COSTO_2('MO000039') WHERE DOCUMENTO_PACIENTE = '22437864'"
-                                //"SELECT * FROM XENDORA_DESPACHOS_SUPER_ALTO_COSTO_3('MO000039') WHERE DOCUMENTO_PACIENTE = '8662447'"
                                 "SELECT * FROM XENDORA_DESPACHOS_SUPER_ALTO_COSTO_3('$sumCod') ORDER BY PACIENTE"
                             )
                         );
-                    //->select("SELECT * FROM  XENDORA_DESPACHOS_SUPER_ALTO_COSTO('$sumCod') WHERE PACIENTE = 'EDMILSON EMILIANO VACA GARCIA' ORDER BY PACIENTE, ANIO DESC, MES DESC");
-                    //->select("SELECT * FROM  XENDORA_DESPACHOS_SUPER_ALTO_COSTO('$sumCod') ORDER BY PACIENTE, ANIO DESC, MES DESC");
-                    //->select("SELECT * FROM  XENDORA_DESPACHOS_SUPER_ALTO_COSTO_2('$sumCod') ORDER BY PACIENTE");
-                    //->select("SELECT * FROM  XENDORA_DESPACHOS_SUPER_ALTO_COSTO_2('$sumCod') ORDER BY PACIENTE");
-                    //->select("SELECT ANIO, MES, TOTAL_DESPACHOS FROM XENDORA_DESPACHOS_SUPER_ALTO_COSTO_2('MO000039') WHERE DOCUMENTO_PACIENTE = '22437864'");
-                    //return ([count($despachosAC), $despachosAC]);
-
 
                     if (count($despachosAC) > 0) {
 
@@ -59,7 +50,7 @@ class DespachosController extends Controller
                             if (!isset($records[$item['DOCUMENTO_PACIENTE']])) {
 
                                 $records[$item['DOCUMENTO_PACIENTE']] = array(
-                                    'patientName' => trim($item['PACIENTE']), // . ' ' . trim($item['PRIMER_APELLIDO']) . ' ' . trim($item['SEGUNDO_APELLIDO']),
+                                    'patientName' => trim($item['PACIENTE']),
                                     'patientDocument' => trim($item['DOCUMENTO_PACIENTE']),
                                     'patientProductCode' => trim($item['COD_PROD']),
                                     'patientProduct' => trim($item['PRODUCTO']),
@@ -74,6 +65,7 @@ class DespachosController extends Controller
                                     $records[$item['DOCUMENTO_PACIENTE']]['ANIO'],
                                     $records[$item['DOCUMENTO_PACIENTE']]['TOTAL_DESPACHOS'],
                                     $records[$item['DOCUMENTO_PACIENTE']]['CONTRATO'],
+                                    $records[$item['DOCUMENTO_PACIENTE']]['TIPO_CONTRATO'],
                                 );
 
                                 $records[$item['DOCUMENTO_PACIENTE']]['dispatch'] = [];
@@ -121,6 +113,7 @@ class DespachosController extends Controller
                                     'status' => 200,
                                     'count' => count($objectDispatch),
                                     'dataPerMonth' => $this->countingByGroupArryData($sumCod),
+                                    'dataPerMonthWithNewDispatch' => $this->countingByGroupArryDataWithNewDispatchs($sumCod),
                                     'data' => $objectDispatch,
                                 ]);
                         } else {
@@ -155,23 +148,18 @@ class DespachosController extends Controller
         }
     }
 
-
     // ========================================================================================
     // FUNCTION TO COUNT BY GROUPING ARRAY DATA
     // ========================================================================================
-    public function countingByGroupArryData($sumCod = '')
+    function countingByGroupArryData($sumCod = '')
     {
-        //$inputArray = $arrayData;
         $inputArray = DB::connection('sqlsrv_hosvital')
             ->select("SELECT * FROM XENDORA_DESPACHOS_SUPER_ALTO_COSTO_3('$sumCod')");
-        //->select("SELECT * FROM XENDORA_DESPACHOS_SUPER_ALTO_COSTO_3('$sumCod') ORDER BY CONCAT(ANIO, '-', MES)");
 
         $objectDispatch = json_decode(json_encode($inputArray));
         $objectMonths = json_decode(json_encode($this->monthsReturns(), true));
         $interArray = [];
         $outputArray = [];
-
-        //foreach ($objectMonths->months as $arrayMonth) $outputArray[] = array($arrayMonth->period);
 
         foreach ($objectDispatch as $item) $interArray[] = [
             'year' => $item->ANIO,
@@ -192,7 +180,45 @@ class DespachosController extends Controller
         }
         usort($outputArray, fn ($a, $b) => $a['period'] === $b['period'] ? 0 : ($a['period'] < $b['period'] ? -1 : 1));
 
+        return array_values($outputArray);
+    }
 
+    // ========================================================================================
+    // FUNCTION TO COUNT BY GROUPING ARRAY DATA WITH NEW DISPATCHS
+    // ========================================================================================
+    function countingByGroupArryDataWithNewDispatchs($sumCod = '')
+    {
+        $inputArray = DB::connection('sqlsrv_hosvital')
+            ->select("SELECT * FROM XENDORA_DESPACHOS_SUPER_ALTO_COSTO_3('$sumCod')");
+
+        $objectDispatch = json_decode(json_encode($inputArray));
+        $objectMonths = json_decode(json_encode($this->monthsReturns(), true));
+        $interArray = [];
+        $outputArray = [];
+
+        foreach ($objectDispatch as $item) {
+            if (Carbon::parse($item->FECHA_PRIMER_DESPACHO)->format('Y'). "-" .Carbon::parse($item->FECHA_PRIMER_DESPACHO)->format('m') === ($item->ANIO .'-'.$item->MES)) {
+                $interArray[] = [
+                    'year' => $item->ANIO,
+                    'month' => $item->MES,
+                    'period' => $item->ANIO . '-' . $item->MES
+                ];
+            }
+        }
+
+        foreach ($interArray as $row) {
+
+            if (!isset($outputArray[$row['period']])) {
+                $outputArray[$row['period']] = array(
+                    'period' => $row['period'],
+                    'month' => $row['month'],
+                    'year' => $row['year'],
+                    'quantity' => 0,
+                );
+            }
+            $outputArray[$row['period']]['quantity']++;
+        }
+        usort($outputArray, fn ($a, $b) => $a['period'] === $b['period'] ? 0 : ($a['period'] < $b['period'] ? -1 : 1));
 
         return array_values($outputArray);
     }

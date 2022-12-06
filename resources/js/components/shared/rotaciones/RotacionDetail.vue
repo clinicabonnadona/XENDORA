@@ -8,8 +8,18 @@
                     </b-th>
                 </b-tr>
                 <b-tr>
-                    <b-th variant="dark" class="text-center">SALDO</b-th>
-                    <b-th variant="dark" class="text-center">PROMEDIO</b-th>
+                    <b-th variant="dark" class="text-center"
+                        >SALDOS FARMACIAS</b-th
+                    >
+                    <b-th variant="dark" class="text-center"
+                        >SALDO CENTRAL MEZCLAS</b-th
+                    >
+                    <b-th variant="dark" class="text-center"
+                        >SALDOS CARROS DE PARO</b-th
+                    >
+                    <b-th variant="dark" class="text-center"
+                        >PROMEDIO ROTACIÓN</b-th
+                    >
                     <b-th variant="success" class="text-center">MIN</b-th>
                     <b-th variant="danger" class="text-center">MAX</b-th>
                     <b-th variant="dark" class="text-center"
@@ -26,6 +36,12 @@
             <b-tbody>
                 <b-tr>
                     <b-td class="text-center">{{ rotacion.sumBalance }}</b-td>
+                    <b-td class="text-center">{{
+                        rotacion.sumBalanceCentralM
+                    }}</b-td>
+                    <b-td class="text-center">{{
+                        rotacion.sumBalanceCrashCart
+                    }}</b-td>
                     <b-td class="text-center">{{ rotacion.averageValue }}</b-td>
                     <b-td variant="success" class="text-center">{{
                         rotacion.minValue

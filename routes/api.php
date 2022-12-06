@@ -92,9 +92,12 @@ Route::middleware('auth')->group(function () {
 
         Route::get('reportes/get-marcaciones-egresos/{pcte_doc}/paciente', 'ReportesController@getMarcacionesEgresos');
 
-        /** reportes calidad */
+        /** Reportes Calidad */
         Route::get('reportes/get/auditoria/{fechaini?}/{fechafin?}', 'ReportesController@reporteCalidadAuditorias');
         Route::get('reportes/get/comites/{fechaini?}/{fechafin?}', 'ReportesController@reporteCalidadComites');
+
+        /** Reportes Halcón */
+        Route::get('reportes/get/halcon/casos/{fechaini?}/{fechafin?}', 'ReportesController@reporteHalconCasos');
 
         /* HANDLE FARMACIA REPORTS ROUTES */
         // Glucometrias
@@ -111,9 +114,12 @@ Route::middleware('auth')->group(function () {
         Route::get('farmacia/get/active-orders/{initdate}/to/{enddate}', 'Api\v1\User\RecepcionFarmaciaController@getActiveOrder');
         Route::post('farmacia/post/active-order', 'Api\v1\User\RecepcionFarmaciaController@saveOrder');
         Route::post('farmacia/put/active-order/{id}', 'Api\v1\User\RecepcionFarmaciaController@editingActiveOrder');
-        Route::get('farmacia/get/received-orders/{initdate}/to/{enddate}', 'Api\v1\User\RecepcionFarmaciaController@getReceivedOrdersReport');
+        Route::get('farmacia/get/received-orders/{initdate}/to/{enddate}', 'Api\v1\User\RecepcionFarmaciaController@exportReport');
+
+        /** HANDLE FARMACIA SHIPPED ORDERS  */
         Route::get('farmacia/get/active-orders-to-shipping/{initDate?}/to/{endDate?}', 'Api\v1\User\ShippingPurchaseOrdersController@getToShippingPurchaseOrders');
         Route::get('farmacia/get/active-orders-to-shipping-report/{initDate?}/to/{endDate?}', 'Api\v1\User\ShippingPurchaseOrdersController@getToShippingPurchaseOrdersReport');
+
         Route::post('farmacia/post/shipping-orders', 'Api\v1\User\ShippingPurchaseOrdersController@saveShippingPurchaseOrders');
         Route::post('farmacia/update/shipping-orders', 'Api\v1\User\ShippingPurchaseOrdersController@updatedShippingPurchaseOrders');
 
@@ -138,5 +144,11 @@ Route::middleware('auth')->group(function () {
         Route::post('provider-evaluation/post/provider-agent/to-xendora', 'Api\v1\User\ProviderEvaluationController@savePharmProvidersAgentsInfo');
         //
         Route::get('provider-evaluation/get/all-agents-lines/from-xendora', 'Api\v1\User\ProviderEvaluationController@getPharmProvidersAgentLinesFromXendora');
+
+
+        /** PROVIDERS CAUSATIONS ROUTES */
+        Route::get('provider-causation/get/all-providers/from-hosvital/{providertype?}', 'Api\v1\Admin\ProveedoresOcbpController@providersOcbpQuery');
+        Route::get('provider-causation/get/all-providers/from-hosvital-two/{providertype?}', 'Api\v1\Admin\ProveedoresOcbpController@providersOcbpQueryGrouped');
+        Route::get('provider-causation/get/providers-types/from-hosvital', 'Api\v1\Admin\ProveedoresOcbpController@getProvidersType');
     });
 });

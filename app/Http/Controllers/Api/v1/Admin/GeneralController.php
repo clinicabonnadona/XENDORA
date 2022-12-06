@@ -21,6 +21,10 @@ class GeneralController extends Controller
         $this->middleware(['auth']);
     }
 
+
+    // ========================================================================================
+    // FUNCTION TO GET ALL SUM WITH BALANCE IN MAIN SUM ROTATION COMPONENT
+    // ========================================================================================
     public function getSumToRotacion()
     {
 
@@ -36,12 +40,23 @@ class GeneralController extends Controller
 
             $supplies = [];
 
-            foreach ($sums as $item) $supplies[] = [
-                'sumCod' => $item->MSRESO,
-                'sumDescription' => $item->SUMNOMC,
-                'sumCommercialDescription' => $item->SUMNOMG,
-                'sumBalance' => $item->SALDO,
-            ];
+            foreach ($sums as $item) {
+
+                $balance = $this->getBalanceForSum($item->MSRESO);
+
+                if ($balance === null) return response()
+                    ->json([
+                        'msg' => 'Cannot Get the Current Balance',
+                        'status' => 204
+                    ]);
+
+                $supplies[] = [
+                    'sumCod' => $item->MSRESO,
+                    'sumDescription' => $item->SUMNOMC,
+                    'sumCommercialDescription' => $item->SUMNOMG,
+                    'sumBalance' => $balance,
+                ];
+            }
 
             if (sizeof($supplies) < 0) return response()->json([
                 'msg' => 'Error Processing Supplies',
@@ -57,10 +72,6 @@ class GeneralController extends Controller
             throw $th;
         }
     }
-
-
-
-
 
     public function getRotacion($SumCod)
     {
@@ -117,6 +128,9 @@ class GeneralController extends Controller
         }
     }
 
+    // ========================================================================================
+    // FUNCTION TO GET ALL ROTATIONS DETAILS
+    // ========================================================================================
     public function getRotacionMesesComplete($sumCod = null)
     {
 
@@ -141,6 +155,9 @@ class GeneralController extends Controller
             ]);
 
             $rotations = [];
+            $realBalance = $this->getBalanceForSum($sumCod);
+            $realBalanceCentralM = $this->getBalanceForSumCentralM($sumCod);
+            $realBalanceCrashCart = $this->getBalanceForSumCrashCarts($sumCod);
             $averageValuesSum = $this->getAverageResultForRotation($rotacion);
             $minValue = 0;
             $maxValue = 0;
@@ -157,10 +174,13 @@ class GeneralController extends Controller
                 if ($value->saldo > $maxValue) $stockAlert = 1;
                 if ($value->saldo < $minValue) $stockAlert = 0;
 
-                $rotations[$value->MSRESO]['sumBalance'] = (int) $value->saldo;
+                $rotations[$value->MSRESO]['sumBalance'] = $realBalance;
+                $rotations[$value->MSRESO]['sumBalanceCentralM'] = $realBalanceCentralM;
+                $rotations[$value->MSRESO]['sumBalanceCrashCart'] = $realBalanceCrashCart;
                 $rotations[$value->MSRESO]['sumLastPrice'] = $value->ultValMes;
                 $rotations[$value->MSRESO]['infoUpdateDate'] = $value->fechAct;
-                $rotations[$value->MSRESO]['averageValue'] = round($averageValuesSum);
+                $rotations[$value->MSRESO]['averageValue'] = $averageValuesSum;
+                //$rotations[$value->MSRESO]['averageValueall'] = $averageValuesSum;
                 $rotations[$value->MSRESO]['minValue'] = round($minValue);
                 $rotations[$value->MSRESO]['maxValue'] = round($maxValue);
                 $rotations[$value->MSRESO]['stockAlert'] = $stockAlert;
@@ -229,26 +249,19 @@ class GeneralController extends Controller
         $averageTotal = 0;
 
         foreach ($rotations as $key => $value) {
-
-            if (($value->Anio . '-' . $value->mes) != $firstMonth->period && ($value->Anio . '-' . $value->mes) != $lastMonth->period) {
-                if ($value->saldo != 0) {
-                    $arrayAveragesValue[] = $value->rotacion;
-                    /* $arrayAveragesValues[] = [
-                        'mes' => $value->mes,
-                        'year' => $value->Anio,
-                        'rotation' => $value->rotacion
-                    ]; */
+            if (($value->Anio . '-' . (int)$value->mes) != $firstMonth->period && ($value->Anio . '-' . (int) $value->mes) != $lastMonth->period) {
+                if ((int) $value->rotacion > 0) {
+                    $arrayAveragesValue[] = (int) $value->rotacion;
                 }
-
-                //$averageValuesSum = array_sum($arrayAveragesValues);
-                $averageValuesSumS = array_sum($arrayAveragesValue);
-                $countMonth = count($arrayAveragesValue);
-                $averageTotal = $this->divnum($averageValuesSumS, ($countMonth));
             }
+            //$averageValuesSum = array_sum($arrayAveragesValues);
+            $averageValuesSumS = array_sum($arrayAveragesValue);
+            $countMonth = count($arrayAveragesValue);
+            $averageTotal = $this->divnum($averageValuesSumS, ($countMonth));
         }
 
         return $averageTotal;
-        //return $arrayAveragesValues;
+        //return 10;
 
         /* return [
             'averageValuesSum' => $averageValuesSum,
@@ -386,6 +399,107 @@ class GeneralController extends Controller
         return array_reverse(['months' => $data]);
     }
 
-    //
+    // ========================================================================================
+    // FUNCTION TO FIND THE BALANCE
+    // ========================================================================================
+    function getBalanceForSum($sumCod)
+    {
 
+        try {
+
+            $balance = 0;
+
+            if (!$sumCod) return response()
+                ->json([
+                    'msg' => 'Cannot Find the MSRESO Value',
+                    'status' => 500
+                ], 500);
+
+            $queryBalance = DB::connection('sqlsrv_hosvital')
+                ->select("SELECT SALDO FROM XENDORA_SALDO_ACTUAL_SUMINISTROS('$sumCod')");
+
+            if (sizeof($queryBalance) < 0) return null;
+
+            foreach ($queryBalance as $item) $balance = $item->SALDO;
+
+            return $balance;
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+
+    // ========================================================================================
+    // FUNCTION TO FIND THE BALANCE CENTRAL MEZCLAS
+    // ========================================================================================
+    function getBalanceForSumCentralM($sumCod)
+    {
+
+        try {
+
+            $balance = 0;
+
+            if (!$sumCod) return response()
+                ->json([
+                    'msg' => 'Cannot Find the MSRESO Value',
+                    'status' => 500
+                ], 500);
+
+            $queryBalance = DB::connection('sqlsrv_hosvital')
+                ->table('KARDEX')
+                ->join('MAESUM1', 'MAESUM1.MSRESO', '=', 'KARDEX.MSRESO')
+                ->join('BODEGAS', 'BODEGAS.BODEGA', '=', 'KARDEX.BODEGA')
+                ->select('MAESUM1.MSRESO', 'MAESUM1.MSNomG')
+                ->selectRaw('CAST(sum(KARDEX.MovSUni) AS NUMERIC) AS SALDO')
+                ->where('KARDEX.BODEGA', '=', 'CTME')
+                ->where('MAESUM1.MSRESO', '=', $sumCod)
+                ->groupBy('MAESUM1.MSRESO', 'MAESUM1.MSNomG')
+                ->get();
+
+            if (sizeof($queryBalance) < 0) return null;
+
+            foreach ($queryBalance as $item) $balance = $item->SALDO;
+
+            return $balance;
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    // ========================================================================================
+    // FUNCTION TO FIND THE BALANCE CARROS DE PARO
+    // ========================================================================================
+    function getBalanceForSumCrashCarts($sumCod)
+    {
+
+        try {
+
+            $balance = 0;
+
+            if (!$sumCod) return response()
+                ->json([
+                    'msg' => 'Cannot Find the MSRESO Value',
+                    'status' => 500
+                ], 500);
+
+            $queryBalance = DB::connection('sqlsrv_hosvital')
+                ->table('KARDEX')
+                ->join('MAESUM1', 'MAESUM1.MSRESO', '=', 'KARDEX.MSRESO')
+                ->join('BODEGAS', 'BODEGAS.BODEGA', '=', 'KARDEX.BODEGA')
+                ->select('MAESUM1.MSRESO', 'MAESUM1.MSNomG')
+                ->selectRaw('CAST(sum(KARDEX.MovSUni) AS NUMERIC) AS SALDO')
+                ->where('KARDEX.BODEGA', '=', 'CP18')
+                ->where('MAESUM1.MSRESO', '=', $sumCod)
+                ->groupBy('MAESUM1.MSRESO', 'MAESUM1.MSNomG')
+                ->get();
+
+            if (sizeof($queryBalance) < 0) return null;
+
+            foreach ($queryBalance as $item) $balance = $item->SALDO;
+
+            return $balance;
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
 }
