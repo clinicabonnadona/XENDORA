@@ -24,7 +24,7 @@
                                         <b-form-select-option
                                             v-for="(pt, index) in providersType"
                                             :key="index"
-                                            :value="pt.typeName"
+                                            :value="pt.typeNum"
                                             >{{ pt.typeName }}</b-form-select-option
                                         >
                                     </b-form-select>
@@ -77,7 +77,7 @@
                                     INFORMACIÓN DEL PROVEEDOR
                                 </b-th>
                                 <b-th
-                                    colspan="13"
+                                    colspan="12"
                                     class="text-center"
                                     variant="primary"
                                     >MESES {{ new Date().getFullYear() }}
@@ -126,7 +126,7 @@
                                         :variant="movement._variant"
                                 >
                                  {{
-                                    movement.mount === 0 ? "" : movement.mount
+                                    movement.mount === 0 ? "" : movement.mount | currency("$", 0)
                                  }}
                                 </b-td>
                             </b-tr>
@@ -186,7 +186,7 @@ export default {
                 ? this.providers.filter(
                       item =>
                           item.providerName.includes(
-                              this.filter
+                              this.filter.toUpperCase()
                           ) ||
                           item.providerNit.includes(this.filter)
                   )

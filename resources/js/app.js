@@ -167,6 +167,11 @@ Vue.component(
     require("./components/shared/compras/ComprasSeguimiento.vue").default
 );
 
+Vue.component(
+    "report-farmacia-hygea",
+    require("./components/shared/reportes/Farmacia/FarmaciaHygea.vue").default
+);
+
 // =======================================
 // Providers Evaluations Main Component
 Vue.component(

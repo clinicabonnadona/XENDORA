@@ -257,6 +257,17 @@
                         </nav>
                         @endcan
 
+                        @can('farmacia-iventario-hygea')
+                        <nav class="sb-sidenav-menu-nested nav">
+                            <a class="nav-link" href="{{ route('reportes.hygeaInventario') }}">
+                                <div class="sb-nav-link-icon">
+                                    <i class="fas fa-business-time"></i>
+                                </div>
+                                Farmacia Hygea Inventario
+                            </a>
+                        </nav>
+                        @endcan
+
                     </div>
                     @endcan
 
@@ -308,7 +319,7 @@
             <div class="sb-sidenav-footer text-center">
                 <div class="small">Ingresaste como:</div>
                 {{ auth()->user()->name }} {{ auth()->user()->lastName }}
-                <a class="btn btn-primary btn-sm btn-block" href="{{ route('logout') }}" onclick="event.preventDefault();
+                <a class="btn btn-sm btn-block" style="background: #1A237E; color: #fff; border: 1px solid #fff;" href="{{ route('logout') }}" onclick="event.preventDefault();
                                                      document.getElementById('logout-form-sidebar').submit();">
                     <i class="fas fa-sign-out-alt"></i>
                     {{ __('Cerrar Sesión') }}

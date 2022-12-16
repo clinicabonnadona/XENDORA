@@ -132,7 +132,7 @@
                                                     end
                                                     lazy
                                                 >
-                                                    <b-tab active>
+                                                    <b-tab >
                                                         <template #title>
                                                             <i
                                                                 class="fas fa-sync"
@@ -200,7 +200,7 @@
                                                         </b-card-text>
                                                     </b-tab>
 
-                                                    <b-tab
+                                                    <b-tab active
                                                         v-if="
                                                             $can(
                                                                 'despachos-ac-access'
@@ -330,7 +330,7 @@ export default {
             sortBy: "",
             sortDesc: false,
             sortDirection: "asc",
-            filter: "",
+            filter: "MO000163",
             customFilters: [
                 {
                     name: "alphabet",

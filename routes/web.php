@@ -104,6 +104,9 @@ Route::middleware('auth')->group(function () {
     // Seg. Evoluciones Fact.
     Route::get('/reportes/seg-evolutions-fact/view', 'Api\v1\User\SeguimientoEvolucionesFact@index')->name('reportes.segEvolucionesFact');
 
+    // Hygea Iventario Conteo
+    Route::get('/reportes/hygea/inventario/view', 'Api\v1\User\FarmaciaReportesController@index')->name('reportes.hygeaInventario');
+
     // Providers Evaluations
     Route::get('/farmacia/providers-evaluations/view', 'Api\v1\User\ProviderEvaluationController@index')->name('farmacia.providersEvaluation');
 });

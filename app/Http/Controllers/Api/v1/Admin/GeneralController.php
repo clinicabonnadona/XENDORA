@@ -179,7 +179,7 @@ class GeneralController extends Controller
                 $rotations[$value->MSRESO]['sumBalanceCrashCart'] = $realBalanceCrashCart;
                 $rotations[$value->MSRESO]['sumLastPrice'] = $value->ultValMes;
                 $rotations[$value->MSRESO]['infoUpdateDate'] = $value->fechAct;
-                $rotations[$value->MSRESO]['averageValue'] = $averageValuesSum;
+                $rotations[$value->MSRESO]['averageValue'] = round($averageValuesSum);
                 //$rotations[$value->MSRESO]['averageValueall'] = $averageValuesSum;
                 $rotations[$value->MSRESO]['minValue'] = round($minValue);
                 $rotations[$value->MSRESO]['maxValue'] = round($maxValue);

@@ -240,8 +240,8 @@ class ReportesController extends Controller
 
                 try {
 
-                    $initDate = Carbon::parse($initalDate)->format('Y-d-m') . ' 00:00:00';
-                    $endDate = Carbon::parse($endingDate)->format('Y-d-m') . ' 23:59:59';
+                    $initDate = Carbon::parse($initalDate)->format('Y-m-d') . ' 00:00:00';
+                    $endDate = Carbon::parse($endingDate)->format('Y-m-d') . ' 23:59:59';
 
                     $query_biometric_marks = DB::connection('sqlsrv_biometrico')
                         ->select("SELECT * FROM EVA_DES_MARCACIONES_BY_DATE_RANGE('$initDate', '$endDate') WHERE CEDULA = '$document' ORDER BY MARCACION");
@@ -304,8 +304,8 @@ class ReportesController extends Controller
             } else {
                 try {
 
-                    $initDate = Carbon::parse($initalDate)->format('Y-d-m') . ' 00:00:00';
-                    $endDate = Carbon::parse($endingDate)->format('Y-d-m') . ' 23:59:59';
+                    $initDate = Carbon::parse($initalDate)->format('Y-m-d') . ' 00:00:00';
+                    $endDate = Carbon::parse($endingDate)->format('Y-m-d') . ' 23:59:59';
 
                     $query_biometric_marks = DB::connection('sqlsrv_biometrico')
                         ->select("SELECT * FROM EVA_DES_MARCACIONES_BY_DATE_RANGE('$initDate', '$endDate') ORDER BY MARCACION");
@@ -923,4 +923,5 @@ class ReportesController extends Controller
             ], 204);
         }
     }
+
 }

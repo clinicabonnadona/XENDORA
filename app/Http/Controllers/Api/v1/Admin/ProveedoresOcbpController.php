@@ -30,8 +30,9 @@ class ProveedoresOcbpController extends Controller
         try {
 
             $queryProviders = DB::connection('sqlsrv_hosvital')
-                ->select("SELECT NIT, RAZON_SOCIAL, FECHA_CAUSACION, MES, ANIO, VALOR, TIPO_PROVEEDOR FROM PROVEEDORES_OCBP_V1() WHERE TIPO_PROVEEDOR = '$providerType'");
-                //->select("SELECT NIT, RAZON_SOCIAL, FECHA_CAUSACION, MES, ANIO, VALOR, TIPO_PROVEEDOR FROM PROVEEDORES_OCBP_V1() WHERE TIPO_PROVEEDOR = 'HONORARIOS PAGOS FIJOS' AND nit = '72192832'");
+                ->select("SELECT NIT, RAZON_SOCIAL, MES, ANIO, VALOR, TIPO_PROVEEDOR FROM XENDORA_PROVEEDORES_OCBP_V1('$providerType')");
+                //->select("SELECT NIT, RAZON_SOCIAL, MES, ANIO, VALOR, TIPO_PROVEEDOR FROM XENDORA_PROVEEDORES_OCBP_V1('$providerType') WHERE NIT = '64564542'");
+            //->select("SELECT NIT, RAZON_SOCIAL, FECHA_CAUSACION, MES, ANIO, VALOR, TIPO_PROVEEDOR FROM PROVEEDORES_OCBP_V1() WHERE TIPO_PROVEEDOR = 'HONORARIOS PAGOS FIJOS' AND nit = '72192832'");
 
             if (sizeof($queryProviders) < 0) return response()->json([
                 'msg' => 'Empty Providers Query',
@@ -40,12 +41,12 @@ class ProveedoresOcbpController extends Controller
 
             return $this->providersOcbpQueryGrouped($queryProviders);
 
-           $queryProvidersResponse = $this->providersOcbpQueryGrouped($queryProviders);
+            $queryProvidersResponse = $this->providersOcbpQueryGrouped($queryProviders);
 
             if (!$queryProvidersResponse) return response()->json([
                 'msg' => 'Empty Providers Response',
                 'status' => 500
-            ], 500); 
+            ], 500);
 
             return $this->providersOcbpQueryGrouped($queryProviders);
         } catch (\Throwable $th) {
@@ -59,7 +60,7 @@ class ProveedoresOcbpController extends Controller
     function providersOcbpQueryGrouped($providers = [])
     {
         try {
-            
+
             if (!$providers) return response()->json([
                 'msg' => 'Empty providers in Group Function',
                 'status' => 500
@@ -68,7 +69,7 @@ class ProveedoresOcbpController extends Controller
             $records = [];
 
             foreach (json_decode(json_encode($providers), true) as $item) {
-                
+
                 if (!isset($records[$item['NIT']])) {
                     $records[$item['NIT']] = [
                         'providerName' => $this->removeWhiteSpaces($item['RAZON_SOCIAL']),
@@ -100,7 +101,7 @@ class ProveedoresOcbpController extends Controller
             foreach ($objectMonths->months as $arrayMonth) {
                 foreach ($objectMovement as $record) {
 
-                    $exist = array_filter($record->movement, fn ($mon) => $mon->period === $arrayMonth->period);                    
+                    $exist = array_filter($record->movement, fn ($mon) => $mon->period === $arrayMonth->period);
 
                     if (!count($exist)) {
                         $month = date('m', strtotime($arrayMonth->period));
@@ -117,18 +118,10 @@ class ProveedoresOcbpController extends Controller
                 }
             }
 
-            /* $resultSum = [];
-            foreach ($objectMovement as $recort) {
-                foreach ($recort->movement as $move) {
-                    if ()
-                }
-            }
 
-            return $resultSum; */
-            
-            $records = array_values(json_decode(json_encode($objectMovement), true));           
+           $records = array_values(json_decode(json_encode($objectMovement), true));           
 
-           if (count($records) < 0) return response()->json([
+            if (count($records) < 0) return response()->json([
                 'msg' => 'Empty Records Array',
                 'status' => 204,
                 'data' => [],
@@ -141,7 +134,6 @@ class ProveedoresOcbpController extends Controller
                     'count' => count($records),
                     'data' => $records,
                 ]);
-
         } catch (\Throwable $th) {
             throw $th;
         }
@@ -156,7 +148,7 @@ class ProveedoresOcbpController extends Controller
         try {
 
             $typeQuery = DB::connection('sqlsrv_hosvital')
-                ->select("SELECT DISTINCT TIPO_PROVEEDOR FROM PROVEEDORES_OCBP_V1()");
+                ->select("SELECT DISTINCT TIPO_PROVEEDOR, CUENTA FROM PROVEEDORES_OCBP_V1()");
 
             if (sizeof($typeQuery) < 0) return response()
                 ->json([
@@ -165,7 +157,7 @@ class ProveedoresOcbpController extends Controller
                 ], 204);
 
             $providersType = [];
-            foreach ($typeQuery as $item) $providersType[] = ['typeName' => $item->TIPO_PROVEEDOR];
+            foreach ($typeQuery as $item) $providersType[] = ['typeName' => $item->TIPO_PROVEEDOR, 'typeNum' => $item->CUENTA];
 
             if (sizeof($providersType) < 0) return response()
                 ->json([

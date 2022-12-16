@@ -1,5 +1,5 @@
-<nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
-    <a class="navbar-brand" href="{{ url('/') }}">
+<nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark" style="background-color: #1A237E !important;">
+    <a class="navbar-brand text-center" href="{{ url('/') }}">
         {{ config('app.name', 'Laravel') }}
     </a>
     <button class="btn btn-link btn-sm order-1 order-lg-0" id="sidebarToggle" href="#">
@@ -14,8 +14,8 @@
         <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" id="userDropdown" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 {{-- <i class="fas fa-user-circle fa-fw"></i> --}}
-                <b-avatar variant="info" src="https://placekitten.com/300/300"></b-avatar>
-                {{ auth()->user()->name }} {{ auth()->user()->lastName }}
+                <b-avatar variant="info" src="https://placekitten.com/300/300" class="mr-2"></b-avatar>
+                HOLA, {{ auth()->user()->name }} {{ auth()->user()->lastName }}
             </a>
 
             <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">

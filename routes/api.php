@@ -99,6 +99,9 @@ Route::middleware('auth')->group(function () {
         /** Reportes Halcón */
         Route::get('reportes/get/halcon/casos/{fechaini?}/{fechafin?}', 'ReportesController@reporteHalconCasos');
 
+        /** Reporte Farmacia */
+        Route::get('reportes/get/hygea/inventario/{fechaini?}/{fechafin?}', 'Api\v1\User\FarmaciaReportesController@reporteHygeaInventario');
+
         /* HANDLE FARMACIA REPORTS ROUTES */
         // Glucometrias
         Route::get('/reportes/get-gluco/{initdate}', 'Api\v1\User\GlucometriasController@getActivoGlucometries');

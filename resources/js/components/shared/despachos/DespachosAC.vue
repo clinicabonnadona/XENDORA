@@ -307,7 +307,7 @@ export default {
                 ? this.despachosAc.filter(
                       item =>
                           item.patientName.includes(
-                              this.filter
+                              this.filter.toUpperCase()
                           ) /* ||
                           item.patientDocument.includes(this.filter) */
                   )
